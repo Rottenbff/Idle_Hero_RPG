@@ -20,24 +20,17 @@ public class FloatingCombatText : MonoBehaviour
         
     }
 
-    // Pass attacker transform directly
-    public void Show(string message, Transform attackerTransform)
+    // Pass the already instantiated floating text object
+    public void Show(GameObject floatingText)
     {
-        if (textPrefab == null) return;
-        if (attackerTransform == null) return;
+        if (floatingText == null) return;
 
-        // Convert world → screen position
-   
-           // Vector2 pos = new Vector2(transform.position.x, transform.position.y-900f);
-        // Create new text
-       //GameObject newText= Instantiate(textPrefab, pos, Quaternion.identity);
         // Animate
         Sequence seq = DOTween.Sequence();
 
-        seq.Append(textPrefab.transform.DOMoveY(textPrefab.transform.position.y + 80f, 15f));
-       //seq.Join(textPrefab.DOFade(0f, 5f));
+        seq.Append(floatingText.transform.DOMoveY(floatingText.transform.position.y + 2f, 1.5f));
 
         // Destroy after animation
-        seq.OnComplete(() => Destroy(textPrefab.gameObject));
+        seq.OnComplete(() => Destroy(floatingText));
     }
 }

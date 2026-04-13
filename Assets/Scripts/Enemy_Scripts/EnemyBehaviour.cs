@@ -37,6 +37,11 @@ public class EnemyBehaviour : MonoBehaviour
             return;
         }
 
+        if (enemyAnimator != null)
+        {
+            enemyAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+        }
+
         currentHealth = enemyData.GetStartingHealth();
         _enemyHealthBar.maxValue = currentHealth;
         _enemyHealthBar.value = currentHealth;
@@ -59,12 +64,14 @@ public class EnemyBehaviour : MonoBehaviour
     // -------------------------------------------------------------------------
 
     // Called by Animation Event at the hit frame
+    [UnityEngine.Scripting.Preserve]
     public void OnAttackHit()
     {
         attackHitFrame = true;
     }
 
     // Called by Animation Event at the last frame
+    [UnityEngine.Scripting.Preserve]
     public void OnAttackEnd()
     {
         attackFinished = true;
@@ -101,7 +108,12 @@ public class EnemyBehaviour : MonoBehaviour
         }
 
         // Wait until the end-frame event fires (clip fully played)
-        yield return new WaitUntil(() => attackFinished);
+        float timeout = 2.0f;
+        while (!attackFinished && timeout > 0)
+        {
+            timeout -= Time.deltaTime;
+            yield return null;
+        }
 
         // Return to idle
         enemyAnimator.SetBool("isAttacking", false);
@@ -124,7 +136,10 @@ public class EnemyBehaviour : MonoBehaviour
 
         var go = Instantiate(textPrefab, transform.position, Quaternion.identity, transform);
         go.GetComponent<TextMesh>().text = $"-{damage}";
-        FloatingCombatText.Instance.Show(damage.ToString(), transform);
+        if (FloatingCombatText.Instance != null)
+        {
+            FloatingCombatText.Instance.Show(go);
+        }
 
         textMeshPro.text = $"{enemyData.Name} HP: {currentHealth}";
         Debug.Log($"[Enemy] {enemyData.Name} took {damage}. HP left: {currentHealth}");

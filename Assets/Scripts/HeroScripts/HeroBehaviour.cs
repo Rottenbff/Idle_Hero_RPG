@@ -37,6 +37,11 @@ public class HeroBehaviour : MonoBehaviour
             return;
         }
 
+        if (heroAnimator != null)
+        {
+            heroAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+        }
+
         currentHealth = heroData.GetStartingHealth();
         _heroHealthBar.maxValue = currentHealth;
         _heroHealthBar.value = currentHealth;
@@ -59,12 +64,14 @@ public class HeroBehaviour : MonoBehaviour
     // -------------------------------------------------------------------------
 
     // Called by Animation Event at the hit frame
+    [UnityEngine.Scripting.Preserve]
     public void OnAttackHit()
     {
         attackHitFrame = true;
     }
 
     // Called by Animation Event at the last frame
+    [UnityEngine.Scripting.Preserve]
     public void OnAttackEnd()
     {
         attackFinished = true;
@@ -101,7 +108,12 @@ public class HeroBehaviour : MonoBehaviour
         }
 
         // Wait until the end-frame event fires (clip fully played)
-        yield return new WaitUntil(() => attackFinished);
+        float timeout = 2.0f;
+        while (!attackFinished && timeout > 0)
+        {
+            timeout -= Time.deltaTime;
+            yield return null;
+        }
 
         // Return to idle
         heroAnimator.SetBool("isAttacking", false);
@@ -124,7 +136,10 @@ public class HeroBehaviour : MonoBehaviour
 
         var go = Instantiate(textPrefab, transform.position, Quaternion.identity, transform);
         go.GetComponent<TextMesh>().text = $"-{damage}";
-        FloatingCombatText.Instance.Show(damage.ToString(), transform);
+        if (FloatingCombatText.Instance != null)
+        {
+            FloatingCombatText.Instance.Show(go);
+        }
 
         heroText.text = $"{heroData.Name} HP: {currentHealth}";
         Debug.Log($"[Hero] {heroData.Name} took {damage}. HP left: {currentHealth}");
