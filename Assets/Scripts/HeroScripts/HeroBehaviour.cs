@@ -97,7 +97,12 @@ public class HeroBehaviour : MonoBehaviour
         heroAnimator.SetBool("isAttacking", true);
 
         // Wait until the hit-frame event fires
-        yield return new WaitUntil(() => attackHitFrame);
+        float hitTimeout = 1.5f;
+        while (!attackHitFrame && hitTimeout > 0)
+        {
+            hitTimeout -= Time.deltaTime;
+            yield return null;
+        }
 
         // Deal damage exactly at the hit frame
         if (target != null && !target.IsDead)
